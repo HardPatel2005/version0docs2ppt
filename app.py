@@ -424,6 +424,7 @@ from pdf_to_json import extract_pdf_content, extract_docx_content, generate_slid
 from main import create_presentation_from_json
 from pptx import Presentation
 
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -450,6 +451,10 @@ os.makedirs(BASE_UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(BASE_OUTPUT_FOLDER, exist_ok=True)
 os.makedirs(PDF_IMAGES_FOLDER, exist_ok=True)
 os.makedirs(DOCX_IMAGES_FOLDER, exist_ok=True)
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('500.html'), 500
 
 # --- SESSION MANAGEMENT ---
 def register_active_session(session_id):

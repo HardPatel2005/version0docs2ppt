@@ -18,6 +18,19 @@ GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
+from google.api_core.exceptions import DeadlineExceeded, GoogleAPICallError
+
+def safe_generate_response(prompt):
+    try:
+        response = model.generate_content(prompt)
+        return response
+    except DeadlineExceeded:
+        logging.error("Gemini API request timed out.")
+        return None
+    except GoogleAPICallError as e:
+        logging.error(f"Gemini API call failed: {e}")
+        return None
+
 # Retry-safe Gemini content generation
 def safe_generate_response(prompt, retries=3, delay=5):
     for attempt in range(retries):
@@ -341,8 +354,11 @@ def chunk_content(content_blocks, chunk_size=3):
 
 #     return all_slides
 def generate_slide_data(content_blocks):
+    chunk_size = 3  # Reduce from 8 if it's high
+
     all_slides = []
     chunks = chunk_content(content_blocks)
+    
 
     for idx, chunk in enumerate(chunks):
         sections_text = ""
