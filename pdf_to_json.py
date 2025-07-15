@@ -11,6 +11,7 @@ import zipfile
 import shutil
 import re
 from uuid import uuid4
+import gc
 
 # Load environment variables
 load_dotenv()
