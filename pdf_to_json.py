@@ -241,8 +241,16 @@ def convert_gemini_response_to_list(response):
     return None
 
 # Break PDF content into chunks
-def chunk_content(content_blocks, chunk_size=3):
-    return [content_blocks[i:i + chunk_size] for i in range(0, len(content_blocks), chunk_size)]
+def chunk_content(content_blocks, chunk_size=1):
+    limited_blocks = []
+
+    for block in content_blocks:
+        if "text" in block and len(block["text"]) > 1200:
+            block["text"] = block["text"][:1200] + "..."
+        limited_blocks.append(block)
+
+    return [limited_blocks[i:i + chunk_size] for i in range(0, len(limited_blocks), chunk_size)]
+
 
 # Generate slides from chunks
 # def generate_slide_data(content_blocks):
@@ -354,23 +362,31 @@ def chunk_content(content_blocks, chunk_size=3):
 
 #     return all_slides
 def generate_slide_data(content_blocks):
-    chunk_size = 3  # Reduce from 8 if it's high
+    chunk_size = 1  # Reduce to 1 block per Gemini prompt to lower memory load
 
     all_slides = []
-    chunks = chunk_content(content_blocks)
-    
+    chunks = chunk_content(content_blocks, chunk_size=chunk_size)
 
     for idx, chunk in enumerate(chunks):
         sections_text = ""
-        
+        total_characters = 0
+
         for i, block in enumerate(chunk):
-            # Check if 'text' exists in the block
             if "text" in block:
-                sections_text += f"Page {i + 1}:\n{block['text']}"
-            
-            # Check if 'image_path' exists in the block
+                text = block['text'].strip()
+                # Limit content text size
+                if len(text) > 1000:
+                    text = text[:1000] + "..."
+                total_characters += len(text)
+                sections_text += f"Page {i + 1}:\n{text}"
+
             if "image_path" in block and block['image_path']:
                 sections_text += f"\n[IMAGE_PATH: {block['image_path']}]"
+
+        # Skip too-large chunks
+        if total_characters > 1500:
+            logging.warning(f"⏭️ Skipping chunk {idx+1} due to size: {total_characters} characters")
+            continue
 
         prompt_template = """
         You are a presentation expert.
@@ -393,29 +409,28 @@ def generate_slide_data(content_blocks):
             "layout": "title_only",
             "title": "max 60 characters"
           }},
-          {{"layout": "title_slide", "title": "max 60 char", "sub-heading": "sub-heading(max 250 characters)"}},
-          {{"layout": "title_and_content", "title": "title(max 65 characters)", "content": "approax 1250 character, add \\n for new line"}},
-          {{"layout": "two_content", "title": "max 65 characters", "content": "450 to 460 max character, add \\n for new line"}},
-          {{"layout": "section_header", "title": "max 60 characters", "sub_heading": "270 character, add \\n for new line"}},
-          {{"layout": "comparison", "title": "max 60 characters", "left_content": {{"title": "max 36 characters", "content": "max 360 characters, add \\n for new line"}}, "right_layout": {{"title": "max 36 characters", "content": "max 360 characters, add \\n for new line"}}}},
-          {{"layout": "content_with_caption", "content": {{"title": "max 60 chracters if the sentence exceed 30 character enter new line", "content": "max 630 characters if sentence exceed 45 charcters use new line"}}}},
-          {{"layout": "image_with_caption", "image_path": "image_path_goes_here", "title": "max 60 chracters", "content": "max 250 characters, add \\n for new line"}},
-          {{"layout": "title_with_table", "title": "Budget Status", "table": {{"headers": ["Category", "Budgeted Amount", "Actual Spend", "Variance"], "rows": [["Hardware", "$150,000", "$140,000", "$10,000"], ["Software", "$100,000", "$95,000", "$5,000"], ["Labor", "$200,000", "$210,000", "-$10,000"], ["Training", "$50,000", "$45,000", "$5,000"]]}}}}
+          {{"layout": "title_slide", "title": "max 60 char", "sub-heading": "sub-heading(max 250 characters)"}} ,
+          {{"layout": "title_and_content", "title": "title(max 65 characters)", "content": "approx 1250 characters, use \\n for new lines"}} ,
+          {{"layout": "image_with_caption", "image_path": "image_path_goes_here", "title": "max 60 characters", "content": "max 250 characters, use \\n"}} 
         ]
 
         Only include image_path if it was explicitly mentioned as [IMAGE_PATH: ...] in the source.
 
         Here is the source:
-        \"\"\"{content}\"\"\" 
+        \"\"\"{content}\"\"\"
         """
 
         prompt = prompt_template.format(content=sections_text.replace("{", "{{").replace("}", "}}"))
-        prompt = prompt.replace("\n", " ")
         print(f"🔹 Processing chunk {idx + 1}/{len(chunks)}...")
         response = safe_generate_response(prompt)
         slides = convert_gemini_response_to_list(response)
+
         if slides:
             all_slides.extend(slides)
+
+        # Cleanup memory
+        del response, slides, sections_text
+        gc.collect()
 
     return all_slides
 
