@@ -10,7 +10,7 @@
 # # BASE_UPLOAD_FOLDER = "uploads"
 # # BASE_OUTPUT_FOLDER = "output"
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 # # os.makedirs(BASE_UPLOAD_FOLDER, exist_ok=True)
 # # os.makedirs(BASE_OUTPUT_FOLDER, exist_ok=True)
@@ -412,6 +412,7 @@ import os
 load_dotenv()  # Loads from ../.env if running from root
 
 from flask import Flask, render_template, request, redirect, url_for, send_file, render_template_string
+
 import os
 import uuid
 import sys
