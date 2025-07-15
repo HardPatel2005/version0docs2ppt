@@ -1,8 +1,6 @@
 Here’s a complete `README.md` tailored for your **Docs to PPT (Flask)** project, ready to be published on GitHub:
 
 ---
-
-```markdown
 # 📝 Docs2PPT - Convert PDF/DOCX to PowerPoint Slides (Flask + Gemini API)
 
 This project allows users to upload **PDF or DOCX** files and generates AI-powered PowerPoint slides using **Gemini API**. Built with **Flask**, it includes cleanup of temporary files and supports deployment to platforms like **Render.com**.
@@ -39,7 +37,7 @@ version0/
 ├── .env                   # Environment secrets (excluded from Git)
 ├── .gitignore             # Files to ignore in Git
 
-````
+
 
 ---
 
