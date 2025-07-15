@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+
+# Output & uploads
+uploads/
+output/
+pdf_images/
+*.pptx
+*.pdf
+
+# Secrets
+.env

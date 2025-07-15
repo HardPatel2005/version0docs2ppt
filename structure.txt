@@ -1,0 +1,29 @@
+.
+├── .env
+├── .gitignore
+├── __init__.py
+├── app.py
+├── docx_extracted
+├── layout.py
+├── main.py
+├── output
+│   └── 2c30c915b7b441358333aa388cd5f906
+│       └── khushi.pptx
+├── pdf_images
+│   └── 2c30c915b7b441358333aa388cd5f906
+│       └── page_1_6f1ca19c.png
+├── pdf_to_json.py
+├── requirements.txt
+├── runtime.txt
+├── slides.json
+├── static
+├── structure.txt
+├── style.py
+├── templates
+│   ├── result.html
+│   └── upload.html
+└── uploads
+    └── 2c30c915b7b441358333aa388cd5f906
+        └── khushi.pdf
+
+10 directories, 17 files
